@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Make Dates Perfect</title>
+<style>
+  :root {
+    --bg: #f4f4fb;
+    --card: #ffffff;
+    --ink: #1b1b2f;
+    --muted: #6b6b83;
+    --line: #e4e4f0;
+    --brand: #5b3fd6;
+    --brand-2: #7c5cff;
+    --brand-soft: #efeaff;
+    --good: #1f9d55;
+    --good-soft: #e6f6ec;
+    --warn: #b8860b;
+    --warn-soft: #fdf3d9;
+    --danger: #c0392b;
+    --shadow: 0 6px 24px rgba(30, 20, 80, 0.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  header.app {
+    display: flex; align-items: center; gap: 14px;
+    background: linear-gradient(120deg, var(--brand), var(--brand-2));
+    color: #fff; padding: 18px 22px; border-radius: 14px;
+    box-shadow: var(--shadow); margin-bottom: 18px;
+  }
+  header.app .logo {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+  }
+  header.app h1 { margin: 0; font-size: 20px; font-weight: 650; }
+  header.app p { margin: 2px 0 0; opacity: 0.9; font-size: 12.5px; }
+
+  .steps { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .step {
+    flex: 1 1 180px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+    color: var(--muted); font-size: 12.5px; font-weight: 600;
+  }
+  .step .num {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--line);
+    color: var(--muted); display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex: none;
+  }
+  .step.active { border-color: var(--brand); color: var(--brand); box-shadow: var(--shadow); }
+  .step.active .num { background: var(--brand); color: #fff; }
+  .step.done .num { background: var(--good); color: #fff; }
+  .step.done { color: var(--good); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 16px; }
+  .card .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 14px; }
+
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  input[type="text"], input[type="number"] {
+    padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px;
+    font-size: 14px; width: 100%; outline: none;
+  }
+  input[type="text"]:focus, input[type="number"]:focus { border-color: var(--brand); }
+  .search-wrap { position: relative; flex: 1 1 320px; }
+  select { padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; font-size: 14px; background: #fff; outline: none; cursor: pointer; }
+  select:focus { border-color: var(--brand); }
+  .ent-badge { display: inline-block; padding: 1px 8px; border-radius: 20px; font-size: 10.5px; font-weight: 700;
+    background: var(--brand-soft); color: var(--brand); text-transform: uppercase; letter-spacing: .3px; }
+  /* Preview entity badges — match the table pill pastels */
+  .ent-badge.ent-opportunity { background: #efe9ff; color: #6b4df2; }
+  .ent-badge.ent-lead        { background: #e2f6f1; color: #0e9f86; }
+  .ent-badge.ent-incident    { background: #fff0e1; color: #d9822b; }
+  .ent-badge.ent-contact     { background: #e7f0ff; color: #2f6bd6; }
+  .ent-badge.ent-account     { background: #ffe8f1; color: #cf4a86; }
+
+  /* Prominent table picker (pastel segmented pills) */
+  .table-picker { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    background: #fbfbff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+  .table-picker .tp-label { font-weight: 700; color: var(--ink); font-size: 13.5px; letter-spacing: .2px; }
+  .table-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .table-tab { --tc: #5b3fd6; --tc-bg: #efeaff;
+    background: #fff; color: var(--tc); border: 1.5px solid var(--line);
+    border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px; transition: background .12s, border-color .12s, box-shadow .12s; }
+  .table-tab:hover { border-color: var(--tc); }
+  .table-tab.active { background: var(--tc-bg); border-color: var(--tc);
+    box-shadow: 0 4px 14px rgba(30, 20, 80, 0.12); }
+  .table-tab .ticon { width: 16px; height: 16px; flex: none; background-color: var(--tc);
+    -webkit-mask: var(--mask) no-repeat center / contain; mask: var(--mask) no-repeat center / contain; }
+  .table-tab .tab-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+    background: var(--tc); color: #fff; font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; }
+  /* Per-table pastel themes */
+  .tab-opportunity { --tc: #6b4df2; --tc-bg: #efe9ff; }
+  .tab-lead        { --tc: #0e9f86; --tc-bg: #e2f6f1; }
+  .tab-incident    { --tc: #d9822b; --tc-bg: #fff0e1; }
+  .tab-contact     { --tc: #2f6bd6; --tc-bg: #e7f0ff; }
+  .tab-account     { --tc: #cf4a86; --tc-bg: #ffe8f1; }
+
+  button {
+    border: none; border-radius: 9px; padding: 10px 18px; font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: transform .05s, box-shadow .15s;
+  }
+  button:active { transform: translateY(1px); }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-2); }
+  .btn-ghost { background: #fff; color: var(--brand); border: 1px solid var(--brand); }
+  .btn-muted { background: #eef0f6; color: var(--ink); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .opp-list { max-height: 340px; overflow: auto; margin-top: 12px; border: 1px solid var(--line); border-radius: 10px; }
+  .opp-item {
+    display: flex; align-items: center; gap: 12px; padding: 11px 14px;
+    border-bottom: 1px solid var(--line); cursor: pointer;
+  }
+  .opp-item:last-child { border-bottom: none; }
+  .opp-item:hover { background: var(--brand-soft); }
+  .opp-item input { width: 18px; height: 18px; accent-color: var(--brand); }
+  .opp-item .name { font-weight: 600; }
+  .opp-item .meta { color: var(--muted); font-size: 12px; margin-left: auto; text-align: right; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge.open { background: var(--good-soft); color: var(--good); }
+  .badge.closed { background: #f0eefb; color: var(--muted); }
+
+  .opt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 6px 0 14px; }
+  .opt {
+    display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+    border: 1px solid var(--line); border-radius: 10px; cursor: pointer; user-select: none;
+  }
+  .opt:hover { border-color: var(--brand); }
+  .opt input { width: 18px; height: 18px; accent-color: var(--brand); }
+  .opt.disabled { opacity: 0.55; cursor: not-allowed; }
+  .opt small { display: block; color: var(--muted); font-size: 11px; }
+
+  .field-inline { display: flex; align-items: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
+  .field-inline label { font-weight: 600; }
+  .field-inline input[type="number"] { width: 90px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { background: #faf9ff; color: var(--muted); font-weight: 600; position: sticky; top: 0; }
+  .table-scroll { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; margin-top: 8px; }
+  .old { color: var(--muted); text-decoration: line-through; }
+  .new { color: var(--good); font-weight: 600; }
+  .delta { font-weight: 600; }
+  .delta.pos { color: var(--good); }
+  .delta.neg { color: var(--danger); }
+
+  .opp-group-head {
+    background: var(--brand-soft); color: var(--brand); font-weight: 700;
+    padding: 8px 12px; font-size: 13px; display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .note {
+    padding: 11px 14px; border-radius: 10px; font-size: 12.5px; margin-top: 10px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .note.warn { background: var(--warn-soft); color: var(--warn); }
+  .note.info { background: var(--brand-soft); color: var(--brand); }
+  .note.good { background: var(--good-soft); color: var(--good); }
+
+  .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+  .hidden { display: none !important; }
+  .spinner {
+    width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+    border-radius: 50%; display: inline-block; animation: spin 0.7s linear infinite; vertical-align: -3px;
+  }
+  .spinner.dark { border-color: rgba(91,63,214,0.25); border-top-color: var(--brand); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress-bar { height: 10px; background: var(--line); border-radius: 8px; overflow: hidden; margin: 10px 0; }
+  .progress-bar > div { height: 100%; width: 0; background: var(--brand); transition: width .2s; }
+  .summary-pill {
+    display: inline-flex; align-items: center; gap: 6px; background: #faf9ff; border: 1px solid var(--line);
+    border-radius: 20px; padding: 4px 12px; font-size: 12px; margin-right: 8px; font-weight: 600;
+  }
+  .log { font-family: Consolas, monospace; font-size: 12px; background: #1b1b2f; color: #d6d6f5;
+    padding: 12px; border-radius: 10px; max-height: 220px; overflow: auto; white-space: pre-wrap; }
+
+  /* Fluent System Icons (loaded from CDN by URL, not inlined) */
+  .ficon { width: 18px; height: 18px; vertical-align: -4px; flex: none; }
+  .ic-white { filter: brightness(0) invert(1); }
+  header.app .logo .ficon { width: 26px; height: 26px; }
+  .step .ficon { width: 15px; height: 15px; opacity: .55; }
+  .step.active .ficon, .step.done .ficon { opacity: 1; }
+  .btn-primary .ficon, .btn-danger .ficon { filter: brightness(0) invert(1); }
+  button .ficon { margin-right: 6px; }
+  .summary-pill .ficon { width: 14px; height: 14px; vertical-align: -2px; }
+
+  /* Collapsible preview groups */
+  .opp-group { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+  .opp-group-head { cursor: pointer; user-select: none; }
+  .opp-group-head .head-left { display: flex; align-items: center; gap: 8px; }
+  .opp-group-head .chev { width: 16px; height: 16px; transition: transform .15s; }
+  .opp-group.open .opp-group-head .chev { transform: rotate(90deg); }
+  .opp-group .opp-body { display: none; }
+  .opp-group.open .opp-body { display: block; }
+
+  /* Confirmation hero (step 5) */
+  .hero { text-align: center; padding: 12px 0 4px; }
+  .hero-badge { width: 66px; height: 66px; border-radius: 50%; background: var(--good);
+    display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
+  .hero-badge .ficon { width: 34px; height: 34px; filter: brightness(0) invert(1); }
+  .hero h2 { margin: 12px 0 4px; font-size: 21px; }
+  .hero p { color: var(--muted); margin: 0; }
+  .conf-stats { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 18px 0 8px; }
+  .conf-stat { background: #faf9ff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 18px; min-width: 120px; text-align: center; }
+  .conf-stat .n { font-size: 24px; font-weight: 700; color: var(--brand); line-height: 1.1; }
+  .conf-stat .n.bad { color: var(--danger); }
+  .conf-stat .l { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  details.log-details { margin-top: 14px; }
+  details.log-details summary { cursor: pointer; color: var(--brand); font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <div class="logo"><img class="ficon ic-white" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Calendar%20Clock/SVG/ic_fluent_calendar_clock_24_regular.svg" /></div>
+    <div>
+      <h1>Make Dates Perfect</h1>
+      <p>Demo-prep wizard · shift opportunity &amp; touchpoint dates forward · spacing preserved · fully reversible</p>
+    </div>
+  </header>
+
+  <div class="steps">
+    <div class="step active" id="stepNav1"><span class="num">1</span><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Select%20All%20On/SVG/ic_fluent_select_all_on_24_regular.svg" /> Select</div>
+    <div class="step" id="stepNav2"><span class="num">2</span><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Settings/SVG/ic_fluent_settings_24_regular.svg" /> Configure</div>
+    <div class="step" id="stepNav3"><span class="num">3</span><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Eye/SVG/ic_fluent_eye_24_regular.svg" /> Preview</div>
+    <div class="step" id="stepNav4"><span class="num">4</span><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Arrow%20Clockwise/SVG/ic_fluent_arrow_clockwise_24_regular.svg" /> Apply</div>
+    <div class="step" id="stepNav5"><span class="num">5</span><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Checkmark%20Circle/SVG/ic_fluent_checkmark_circle_24_regular.svg" /> Done</div>
+  </div>
+
+  <!-- Connection warning -->
+  <div id="noXrm" class="card hidden">
+    <h2>⚠️ Not running inside Dynamics 365</h2>
+    <div class="sub">This wizard uses <code>Xrm.WebApi</code> and must be opened as a web resource inside your
+      Dynamics 365 environment (so it authenticates automatically). Open it from a model-driven app or via its
+      web-resource URL, e.g. <code>https://yourorg.crm.dynamics.com/WebResources/&lt;prefix&gt;_/makedatesperfect/make-dates-perfect.html</code>.</div></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div id="step1" class="card">
+    <h2>Step 1 — Select records</h2>
+    <div class="sub">Pick a table, then search and tick the records you want to freshen up. Selections add up across tables.
+      Each record gets its own offset so its story is individually re-centred on today.</div>
+    <div class="table-picker">
+      <span class="tp-label">Which table?</span>
+      <div class="table-tabs" id="tableTabs">
+        <button type="button" class="table-tab tab-opportunity active" data-entity="opportunity">
+          <span class="ticon" style="--mask:url('https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Money/SVG/ic_fluent_money_24_regular.svg')"></span>
+          Opportunities<span class="tab-count" style="display:none">0</span>
+        </button>
+        <button type="button" class="table-tab tab-lead" data-entity="lead">
+          <span class="ticon" style="--mask:url('https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Person%20Add/SVG/ic_fluent_person_add_24_regular.svg')"></span>
+          Leads<span class="tab-count" style="display:none">0</span>
+        </button>
+        <button type="button" class="table-tab tab-incident" data-entity="incident">
+          <span class="ticon" style="--mask:url('https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Headset/SVG/ic_fluent_headset_24_regular.svg')"></span>
+          Cases<span class="tab-count" style="display:none">0</span>
+        </button>
+        <button type="button" class="table-tab tab-contact" data-entity="contact">
+          <span class="ticon" style="--mask:url('https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Person/SVG/ic_fluent_person_24_regular.svg')"></span>
+          Contacts<span class="tab-count" style="display:none">0</span>
+        </button>
+        <button type="button" class="table-tab tab-account" data-entity="account">
+          <span class="ticon" style="--mask:url('https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Building/SVG/ic_fluent_building_24_regular.svg')"></span>
+          Accounts<span class="tab-count" style="display:none">0</span>
+        </button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="search-wrap">
+        <input type="text" id="searchBox" placeholder="Search by name…" />
+      </div>
+      <button class="btn-ghost" id="btnSearch"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Search/SVG/ic_fluent_search_24_regular.svg" />Search</button>
+      <button class="btn-ghost" id="btnSelectAll"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Select%20All%20On/SVG/ic_fluent_select_all_on_24_regular.svg" />Select all</button>
+      <label class="opt" style="flex:none;">
+        <input type="checkbox" id="openOnly" checked /> Active / open only
+      </label>
+    </div>
+    <div id="oppListWrap" class="opp-list"></div>
+    <div class="actions">
+      <span class="summary-pill" id="selCount">0 selected</span>
+      <button class="btn-primary" id="toStep2" disabled>Next: Configure <img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Settings/SVG/ic_fluent_settings_24_regular.svg" style="margin:0 0 0 6px;" /></button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" class="card hidden">
+    <h2>Step 2 — Configure the shift</h2>
+    <div class="sub">Choose which touchpoints to move and where the most recent one should land.</div>
+
+    <h3 style="margin:8px 0 4px; font-size:13.5px;">Touchpoint tables</h3>
+    <div class="opt-grid">
+      <label class="opt"><input type="checkbox" class="actType" value="email" checked /> <span>Emails<small>actualstart · actualend</small></span></label>
+      <label class="opt"><input type="checkbox" class="actType" value="phonecall" checked /> <span>Phone Calls<small>scheduled · actual</small></span></label>
+      <label class="opt"><input type="checkbox" class="actType" value="appointment" checked /> <span>Appointments<small>scheduled · actual</small></span></label>
+      <label class="opt"><input type="checkbox" class="actType" value="task" checked /> <span>Tasks<small>scheduled · actual</small></span></label>
+      <label class="opt disabled" title="Notes only have createdon, which is read-only in business-dates mode.">
+        <input type="checkbox" id="notesChk" disabled /> <span>Notes<small>createdon read-only — will be listed as skipped</small></span></label>
+    </div>
+
+    <h3 style="margin:8px 0 4px; font-size:13.5px;">Record's own dates</h3>
+    <label class="opt" style="max-width:420px;">
+      <input type="checkbox" id="shiftClose" checked />
+      <span>Shift each record's own dates<small>e.g. opportunity close date, case follow-up by (moves by the same offset)</small></span>
+    </label>
+
+    <h3 style="margin:14px 0 4px; font-size:13.5px;">Anchor</h3>
+    <div class="field-inline">
+      <label>Place the latest touchpoint</label>
+      <input type="number" id="padDays" value="0" min="0" />
+      <label>day(s) before today</label>
+      <span style="color:var(--muted); font-size:12px;">(0 = latest touchpoint lands exactly on today)</span>
+    </div>
+    <div class="note info"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Info/SVG/ic_fluent_info_24_regular.svg" /> Spacing is preserved: every date moves by the same whole-day offset, so the story between
+      touchpoints stays identical — it just slides forward to be current.</div>
+
+    <div class="actions">
+      <button class="btn-muted" id="backTo1"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Arrow%20Left/SVG/ic_fluent_arrow_left_24_regular.svg" />Back</button>
+      <button class="btn-primary" id="toStep3">Preview <img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Eye/SVG/ic_fluent_eye_24_regular.svg" style="margin:0 0 0 6px;" /></button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div id="step3" class="card hidden">
+    <h2>Step 3 — Preview (dry run)</h2>
+    <div class="sub">Nothing has changed yet. Review exactly what will move, then apply.</div>
+    <div id="previewSummary" style="margin-bottom:10px;"></div>
+    <div id="previewBody"></div>
+    <div class="actions">
+      <button class="btn-muted" id="backTo2"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Arrow%20Left/SVG/ic_fluent_arrow_left_24_regular.svg" />Back</button>
+      <button class="btn-primary" id="toApply" disabled><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Checkmark/SVG/ic_fluent_checkmark_24_regular.svg" />Apply changes</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div id="step4" class="card hidden">
+    <h2>Step 4 — Applying changes</h2>
+    <div class="sub">Writing updates. This never deletes anything and every change is logged for undo. Please wait…</div>
+    <div class="progress-bar"><div id="progFill"></div></div>
+    <div id="applyStatus" style="margin-bottom:10px; font-weight:600;"></div>
+    <div class="log" id="applyLog"></div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div id="step5" class="card hidden">
+    <div class="hero">
+      <div class="hero-badge"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Checkmark/SVG/ic_fluent_checkmark_24_regular.svg" /></div>
+      <h2>All done — dates are perfect</h2>
+      <p id="confMsg">Your opportunities have been re-centred on today.</p>
+    </div>
+    <div class="conf-stats" id="confStats"></div>
+    <div id="confStatus" class="note good hidden"></div>
+    <details class="log-details"><summary>View change log</summary><div class="log" id="confLog"></div></details>
+    <div class="actions">
+      <button class="btn-ghost" id="downloadUndo"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Arrow%20Download/SVG/ic_fluent_arrow_download_24_regular.svg" />Download undo log</button>
+      <button class="btn-danger" id="btnUndo"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Arrow%20Undo/SVG/ic_fluent_arrow_undo_24_regular.svg" />Undo all changes</button>
+      <button class="btn-muted" id="startOver"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Arrow%20Clockwise/SVG/ic_fluent_arrow_clockwise_24_regular.svg" />Start over</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ── Xrm handle ───────────────────────────────────────────────
+function getXrm() {
+  return window.Xrm || (window.parent && window.parent.Xrm) || (window.top && window.top.Xrm) || null;
+}
+const Xrm = getXrm();
+const DAY = 86400000;
+
+// ── Fluent icon URLs (loaded from CDN, not inlined) ──────────
+const IC_BASE = "https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/";
+const IC = {
+  chevron: IC_BASE + "Chevron%20Right/SVG/ic_fluent_chevron_right_24_regular.svg",
+  warning: IC_BASE + "Warning/SVG/ic_fluent_warning_24_regular.svg",
+};
+
+// ── State ────────────────────────────────────────────────────
+const state = {
+  table: "opportunity",  // currently selected table (pill picker)
+  results: [],         // current search results for the current table
+  selected: {},        // "entity:id" -> {entity, id, name}
+  config: null,        // {types:[], shiftClose, padDays}
+  plan: null,          // [{record, tableLabel, offsetDays, rows:[...], skippedNotes}]
+  undoLog: [],         // [{entity, id, data:{field:oldValue}}]
+};
+
+// ── Field definitions ────────────────────────────────────────
+const ACTIVITY_FIELDS = {
+  email:       ["actualstart", "actualend"],
+  phonecall:   ["scheduledstart", "scheduledend", "actualstart", "actualend"],
+  appointment: ["scheduledstart", "scheduledend", "actualstart", "actualend"],
+  task:        ["scheduledstart", "scheduledend", "actualstart", "actualend"],
+};
+
+// Root tables the wizard can operate on. Activities relate to all of them via
+// regardingobjectid, so only the id/name fields and each table's own writable
+// business-date fields differ.
+const TABLES = {
+  opportunity: { label: "Opportunity", idField: "opportunityid", nameField: "name",
+    ownFields: [{ name: "estimatedclosedate", dateOnly: true }, { name: "actualclosedate", dateOnly: true }] },
+  lead:        { label: "Lead", idField: "leadid", nameField: "subject", ownFields: [] },
+  incident:    { label: "Case", idField: "incidentid", nameField: "title",
+    ownFields: [{ name: "followupby", dateOnly: false }] },
+  contact:     { label: "Contact", idField: "contactid", nameField: "fullname", ownFields: [] },
+  account:     { label: "Account", idField: "accountid", nameField: "name", ownFields: [] },
+};
+
+function currentTable() { return TABLES[state.table]; }
+function selKey(entity, id) { return entity + ":" + id; }
+
+// ── UI helpers ───────────────────────────────────────────────
+const $ = (id) => document.getElementById(id);
+function show(id) { $(id).classList.remove("hidden"); }
+function hide(id) { $(id).classList.add("hidden"); }
+function setStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    hide("step" + i);
+    const nav = $("stepNav" + i);
+    nav.classList.remove("active", "done");
+    if (i < n) nav.classList.add("done");
+    if (i === n) nav.classList.add("active");
+  }
+  show("step" + n);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function fmt(dateObj, isDateOnly) {
+  if (!dateObj) return "—";
+  if (isDateOnly) {
+    return dateObj.getUTCFullYear() + "-" +
+      String(dateObj.getUTCMonth() + 1).padStart(2, "0") + "-" +
+      String(dateObj.getUTCDate()).padStart(2, "0");
+  }
+  return dateObj.toLocaleString(undefined, { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+function parseDate(v) { return v ? new Date(v) : null; }
+
+function toApiValue(dateObj, isDateOnly) {
+  if (isDateOnly) {
+    return dateObj.getUTCFullYear() + "-" +
+      String(dateObj.getUTCMonth() + 1).padStart(2, "0") + "-" +
+      String(dateObj.getUTCDate()).padStart(2, "0");
+  }
+  return dateObj.toISOString();
+}
+function shiftDate(dateObj, offsetDays) { return new Date(dateObj.getTime() + offsetDays * DAY); }
+
+// ── Web API wrappers ─────────────────────────────────────────
+async function retrieveMultiple(entity, options) {
+  const res = await Xrm.WebApi.retrieveMultipleRecords(entity, options);
+  return res.entities || [];
+}
+async function updateRecord(entity, id, data) {
+  return Xrm.WebApi.updateRecord(entity, id, data);
+}
+
+// ── STEP 1: search records ───────────────────────────────────
+async function searchRecords() {
+  if (!Xrm) return;
+  const t = currentTable();
+  const term = $("searchBox").value.trim().replace(/'/g, "''");
+  const openOnly = $("openOnly").checked;
+  let filter = [];
+  if (openOnly) filter.push("statecode eq 0");
+  if (term) filter.push("contains(" + t.nameField + ",'" + term + "')");
+  const filterStr = filter.length ? "&$filter=" + filter.join(" and ") : "";
+  const options = "?$select=" + t.nameField + ",statecode,modifiedon&$orderby=modifiedon desc&$top=50" + filterStr;
+  $("oppListWrap").innerHTML = '<div style="padding:16px;color:var(--muted);"><span class="spinner dark"></span> Searching…</div>';
+  try {
+    state.results = await retrieveMultiple(state.table, options);
+    renderResults();
+  } catch (e) {
+    $("oppListWrap").innerHTML = '<div style="padding:16px;color:var(--danger);">Error: ' + e.message + '</div>';
+  }
+}
+
+function renderResults() {
+  const t = currentTable();
+  const entity = state.table;
+  const wrap = $("oppListWrap");
+  if (!state.results.length) {
+    wrap.innerHTML = '<div style="padding:16px;color:var(--muted);">No records found.</div>';
+    return;
+  }
+  wrap.innerHTML = state.results.map((o) => {
+    const id = o[t.idField];
+    const open = o.statecode === 0;
+    const upd = o.modifiedon ? new Date(o.modifiedon).toLocaleDateString() : "";
+    const checked = state.selected[selKey(entity, id)] ? "checked" : "";
+    return '<label class="opp-item">' +
+      '<input type="checkbox" data-id="' + id + '" ' + checked + ' />' +
+      '<span class="name">' + escapeHtml(o[t.nameField] || "(no name)") + '</span>' +
+      '<span class="meta"><span class="badge ' + (open ? "open" : "closed") + '">' + (open ? "Open" : "Closed") + '</span>' +
+      (upd ? ' · updated ' + upd : '') + '</span>' +
+      '</label>';
+  }).join("");
+  wrap.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+    cb.addEventListener("change", (e) => {
+      const id = e.target.getAttribute("data-id");
+      const key = selKey(entity, id);
+      if (e.target.checked) {
+        const o = state.results.find((x) => x[t.idField] === id);
+        state.selected[key] = { entity, id, name: o[t.nameField] || "(no name)" };
+      } else {
+        delete state.selected[key];
+      }
+      updateSelCount();
+    });
+  });
+}
+
+function updateSelCount() {
+  const n = Object.keys(state.selected).length;
+  $("selCount").textContent = n + " selected";
+  $("toStep2").disabled = n === 0;
+  updateTabCounts();
+}
+
+function updateTabCounts() {
+  const counts = {};
+  for (const k of Object.keys(state.selected)) {
+    const ent = state.selected[k].entity;
+    counts[ent] = (counts[ent] || 0) + 1;
+  }
+  document.querySelectorAll(".table-tab").forEach((btn) => {
+    const ent = btn.getAttribute("data-entity");
+    const badge = btn.querySelector(".tab-count");
+    const c = counts[ent] || 0;
+    badge.textContent = c;
+    badge.style.display = c ? "inline-flex" : "none";
+  });
+}
+
+function selectAllOnPage() {
+  if (!state.results.length) return;
+  const t = currentTable();
+  const entity = state.table;
+  for (const o of state.results) {
+    const id = o[t.idField];
+    state.selected[selKey(entity, id)] = { entity, id, name: o[t.nameField] || "(no name)" };
+  }
+  renderResults();
+  updateSelCount();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// ── STEP 2 → build plan ──────────────────────────────────────
+function readConfig() {
+  const types = Array.from(document.querySelectorAll(".actType:checked")).map((c) => c.value);
+  return {
+    types,
+    shiftClose: $("shiftClose").checked,
+    padDays: Math.max(0, parseInt($("padDays").value, 10) || 0),
+  };
+}
+
+async function buildPlan() {
+  state.config = readConfig();
+  const plan = [];
+  for (const key of Object.keys(state.selected)) {
+    const sel = state.selected[key]; // {entity, id, name}
+    const t = TABLES[sel.entity];
+    const entry = { record: sel, tableLabel: t.label, offsetDays: 0, rows: [], skippedNotes: 0 };
+
+    // Fetch activities via activitypointer (works for any root table)
+    const acts = await retrieveMultiple("activitypointer",
+      "?$select=activityid,activitytypecode,subject,scheduledstart,scheduledend,actualstart,actualend" +
+      "&$filter=_regardingobjectid_value eq " + sel.id);
+
+    const relevantActs = acts.filter((a) => state.config.types.includes(a.activitytypecode));
+
+    // Determine anchor = latest activity date across relevant fields
+    let anchorMs = null;
+    for (const a of relevantActs) {
+      const fields = ACTIVITY_FIELDS[a.activitytypecode] || [];
+      for (const f of fields) {
+        if (a[f]) {
+          const ts = new Date(a[f]).getTime();
+          if (anchorMs === null || ts > anchorMs) anchorMs = ts;
+        }
+      }
+    }
+
+    // Fetch the record's own writable date fields (for shifting + fallback anchor)
+    let ownRec = null;
+    if (state.config.shiftClose && t.ownFields.length) {
+      const selectFields = [t.idField].concat(t.ownFields.map((f) => f.name)).join(",");
+      ownRec = (await retrieveMultiple(sel.entity,
+        "?$select=" + selectFields + "&$filter=" + t.idField + " eq " + sel.id))[0];
+      if (anchorMs === null && ownRec) {
+        for (const f of t.ownFields) {
+          if (ownRec[f.name]) { anchorMs = new Date(ownRec[f.name] + (f.dateOnly ? "T00:00:00Z" : "")).getTime(); break; }
+        }
+      }
+    }
+
+    if (anchorMs === null) {
+      entry.offsetDays = 0; // nothing to anchor on
+    } else {
+      entry.offsetDays = Math.round((Date.now() - anchorMs) / DAY) - state.config.padDays;
+    }
+
+    // Build activity rows
+    for (const a of relevantActs) {
+      const fields = ACTIVITY_FIELDS[a.activitytypecode] || [];
+      for (const f of fields) {
+        if (!a[f]) continue;
+        const oldVal = parseDate(a[f]);
+        entry.rows.push({
+          entity: a.activitytypecode, id: a.activityid,
+          label: (a.subject || "(no subject)"), typeLabel: a.activitytypecode,
+          field: f, isDateOnly: false, oldVal, newVal: shiftDate(oldVal, entry.offsetDays),
+        });
+      }
+    }
+
+    // Record's own date fields
+    if (ownRec) {
+      for (const f of t.ownFields) {
+        if (!ownRec[f.name]) continue;
+        const raw = f.dateOnly ? ownRec[f.name] + "T00:00:00Z" : ownRec[f.name];
+        const oldVal = parseDate(raw);
+        entry.rows.push({
+          entity: sel.entity, id: sel.id,
+          label: sel.name, typeLabel: t.label.toLowerCase(),
+          field: f.name, isDateOnly: f.dateOnly, oldVal, newVal: shiftDate(oldVal, entry.offsetDays),
+        });
+      }
+    }
+
+    // Count skipped notes (annotations) for transparency
+    try {
+      const notes = await retrieveMultiple("annotation",
+        "?$select=annotationid&$filter=_objectid_value eq " + sel.id);
+      entry.skippedNotes = notes.length;
+    } catch (e) { /* ignore */ }
+
+    plan.push(entry);
+  }
+  state.plan = plan;
+}
+
+function renderPreview() {
+  const totalRows = state.plan.reduce((s, p) => s + p.rows.length, 0);
+  const totalNotes = state.plan.reduce((s, p) => s + p.skippedNotes, 0);
+  $("toApply").disabled = totalRows === 0;
+
+  let sum = '<span class="summary-pill">' + state.plan.length + ' opportunit' + (state.plan.length === 1 ? 'y' : 'ies') + '</span>' +
+            '<span class="summary-pill">' + totalRows + ' date field' + (totalRows === 1 ? '' : 's') + ' to shift</span>';
+  if (totalNotes) sum += '<span class="summary-pill"><img class="ficon" alt="" src="' + IC.warning + '"> ' + totalNotes + ' note' + (totalNotes === 1 ? '' : 's') + ' skipped</span>';
+  $("previewSummary").innerHTML = sum;
+
+  let html = "";
+  state.plan.forEach((p, idx) => {
+    const dir = p.offsetDays >= 0 ? "forward" : "backward";
+    const shiftLabel = p.offsetDays === 0 ? "no shift" : (Math.abs(p.offsetDays) + " day" + (Math.abs(p.offsetDays) === 1 ? "" : "s") + " " + dir);
+    html += '<div class="opp-group" data-idx="' + idx + '">';
+    html += '<div class="opp-group-head">' +
+            '<span class="head-left"><img class="chev" alt="" src="' + IC.chevron + '"><span class="ent-badge ent-' + p.record.entity + '">' + escapeHtml(p.tableLabel) + '</span>' + escapeHtml(p.record.name) + '</span>' +
+            '<span>' + shiftLabel + ' · ' + p.rows.length + ' field' + (p.rows.length === 1 ? '' : 's') + '</span>' +
+            '</div>';
+    html += '<div class="opp-body">';
+    if (!p.rows.length) {
+      html += '<div style="padding:12px;color:var(--muted);">No shiftable date fields found for the selected tables.</div>';
+    } else {
+      html += '<div class="table-scroll"><table><thead><tr>' +
+        '<th>Record</th><th>Type</th><th>Field</th><th>Current</th><th>New</th><th>Δ days</th></tr></thead><tbody>';
+      for (const r of p.rows) {
+        const dcls = p.offsetDays >= 0 ? "pos" : "neg";
+        html += '<tr>' +
+          '<td>' + escapeHtml(r.label) + '</td>' +
+          '<td>' + r.typeLabel + '</td>' +
+          '<td>' + r.field + '</td>' +
+          '<td class="old">' + fmt(r.oldVal, r.isDateOnly) + '</td>' +
+          '<td class="new">' + fmt(r.newVal, r.isDateOnly) + '</td>' +
+          '<td class="delta ' + dcls + '">' + (p.offsetDays >= 0 ? "+" : "") + p.offsetDays + '</td>' +
+          '</tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    if (p.skippedNotes) {
+      html += '<div class="note warn" style="margin:10px;"><img class="ficon" alt="" src="' + IC.warning + '"> ' + p.skippedNotes + ' note(s) on this record can\'t be shifted — annotations only carry <code>createdon</code>, which is read-only.</div>';
+    }
+    html += '</div></div>';
+  });
+  const body = $("previewBody");
+  body.innerHTML = html;
+  // Collapsed by default; clicking the header toggles the group.
+  body.querySelectorAll(".opp-group-head").forEach((head) => {
+    head.addEventListener("click", () => head.parentElement.classList.toggle("open"));
+  });
+}
+
+// ── STEP 4: apply ────────────────────────────────────────────
+async function applyChanges() {
+  setStep(4);
+  const logEl = $("applyLog");
+  const statusEl = $("applyStatus");
+  const fill = $("progFill");
+  state.undoLog = [];
+  logEl.textContent = "";
+
+  // Group updates by record (entity+id) so multiple fields patch in one call
+  const updates = {};
+  for (const p of state.plan) {
+    for (const r of p.rows) {
+      const key = r.entity + "|" + r.id;
+      if (!updates[key]) updates[key] = { entity: r.entity, id: r.id, label: r.label, data: {}, undoData: {} };
+      updates[key].data[r.field] = toApiValue(r.newVal, r.isDateOnly);
+      updates[key].undoData[r.field] = toApiValue(r.oldVal, r.isDateOnly);
+    }
+  }
+  const list = Object.values(updates);
+  let done = 0, failed = 0;
+
+  for (const u of list) {
+    try {
+      await updateRecord(u.entity, u.id, u.data);
+      state.undoLog.push({ entity: u.entity, id: u.id, data: u.undoData });
+      logEl.textContent += "✔ " + u.entity + " · " + u.label + "\n";
+    } catch (e) {
+      failed++;
+      logEl.textContent += "✖ " + u.entity + " · " + u.label + " → " + (e.message || e) + "\n";
+    }
+    done++;
+    fill.style.width = Math.round((done / list.length) * 100) + "%";
+    statusEl.innerHTML = "Updated " + (done - failed) + " / " + list.length + (failed ? " · " + failed + " failed" : "");
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  state.applyResult = {
+    records: list.length,
+    applied: done - failed,
+    failed: failed,
+    opps: state.plan.length,
+    fields: state.plan.reduce((s, p) => s + p.rows.length, 0),
+  };
+  renderConfirmation(logEl.textContent);
+  setStep(5);
+}
+
+function renderConfirmation(logText) {
+  const r = state.applyResult || { records: 0, applied: 0, failed: 0, opps: 0, fields: 0 };
+  $("confMsg").textContent = r.failed
+    ? "Applied with " + r.failed + " issue(s) — check the change log below."
+    : "Your records have been re-centred on today. Spacing preserved, story intact.";
+  let stats = '<div class="conf-stat"><div class="n">' + r.opps + '</div><div class="l">record' + (r.opps === 1 ? '' : 's') + '</div></div>' +
+              '<div class="conf-stat"><div class="n">' + r.fields + '</div><div class="l">date fields shifted</div></div>' +
+              '<div class="conf-stat"><div class="n">' + r.applied + '</div><div class="l">records updated</div></div>';
+  if (r.failed) stats += '<div class="conf-stat"><div class="n bad">' + r.failed + '</div><div class="l">failed</div></div>';
+  $("confStats").innerHTML = stats;
+  $("confLog").textContent = logText || "";
+  $("confStatus").classList.add("hidden");
+  $("btnUndo").disabled = state.undoLog.length === 0;
+  $("downloadUndo").disabled = state.undoLog.length === 0;
+}
+
+async function undoAll() {
+  if (!state.undoLog.length) return;
+  if (!confirm("Roll back all " + state.undoLog.length + " record update(s) to their original dates?")) return;
+  const logEl = $("confLog");
+  const statusEl = $("confStatus");
+  statusEl.classList.remove("hidden");
+  let done = 0, failed = 0;
+  logEl.textContent += "\n— UNDO —\n";
+  $("btnUndo").disabled = true;
+  for (const u of state.undoLog) {
+    try {
+      await updateRecord(u.entity, u.id, u.data);
+      logEl.textContent += "↺ restored " + u.entity + " (" + u.id + ")\n";
+    } catch (e) {
+      failed++;
+      logEl.textContent += "✖ undo failed " + u.entity + " → " + (e.message || e) + "\n";
+    }
+    done++;
+    statusEl.textContent = "↺ Rolled back " + (done - failed) + " / " + state.undoLog.length + " update(s)" + (failed ? " · " + failed + " failed" : "") + ".";
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+}
+
+function downloadUndo() {
+  const payload = { generatedAt: new Date().toISOString(), org: location.origin, undo: state.undoLog };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "make-dates-perfect-undo-" + Date.now() + ".json";
+  a.click();
+}
+
+// ── Wiring ───────────────────────────────────────────────────
+function init() {
+  if (!Xrm) { show("noXrm"); hide("step1"); return; }
+
+  $("btnSearch").addEventListener("click", searchRecords);
+  $("btnSelectAll").addEventListener("click", selectAllOnPage);
+  $("searchBox").addEventListener("keydown", (e) => { if (e.key === "Enter") searchRecords(); });
+  $("openOnly").addEventListener("change", searchRecords);
+  document.querySelectorAll(".table-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".table-tab").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.table = btn.getAttribute("data-entity");
+      $("searchBox").value = "";
+      searchRecords();
+    });
+  });
+
+  $("toStep2").addEventListener("click", () => setStep(2));
+  $("backTo1").addEventListener("click", () => setStep(1));
+  $("backTo2").addEventListener("click", () => setStep(2));
+
+  $("toStep3").addEventListener("click", async () => {
+    setStep(3);
+    $("previewBody").innerHTML = '<div style="padding:16px;color:var(--muted);"><span class="spinner dark"></span> Analysing records…</div>';
+    $("toApply").disabled = true;
+    try {
+      await buildPlan();
+      renderPreview();
+    } catch (e) {
+      $("previewBody").innerHTML = '<div class="note warn">Error building preview: ' + escapeHtml(e.message || String(e)) + '</div>';
+    }
+  });
+
+  $("toApply").addEventListener("click", () => {
+    const total = state.plan.reduce((s, p) => s + p.rows.length, 0);
+    if (confirm("Apply date shifts to " + total + " field(s)? Nothing is deleted, and you can undo afterwards.")) {
+      applyChanges();
+    }
+  });
+
+  $("btnUndo").addEventListener("click", undoAll);
+  $("downloadUndo").addEventListener("click", downloadUndo);
+  $("startOver").addEventListener("click", () => location.reload());
+
+  // Initial load
+  searchRecords();
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>

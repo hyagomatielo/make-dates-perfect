@@ -1,0 +1,34 @@
+{
+  "name": "make-dates-perfect",
+  "version": "1.0.0",
+  "description": "Make Dates Perfect — a demo-prep wizard for Microsoft Dynamics 365 / Dataverse that shifts opportunity, lead, case, contact and account dates (and their related touchpoints) forward while preserving spacing. Update-only and fully reversible. For demo environments only.",
+  "main": "deploy.js",
+  "scripts": {
+    "deploy": "node deploy.js"
+  },
+  "keywords": [
+    "dynamics365",
+    "dataverse",
+    "power-platform",
+    "model-driven-app",
+    "web-resource",
+    "demo",
+    "dates",
+    "wizard"
+  ],
+  "author": "Hyago Matielo",
+  "license": "MIT",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyagomatielo/make-dates-perfect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hyagomatielo/make-dates-perfect/issues"
+  },
+  "homepage": "https://github.com/hyagomatielo/make-dates-perfect#readme",
+  "dependencies": {
+    "@azure/msal-node": "^3.8.10",
+    "node-fetch": "^2.7.0"
+  }
+}

@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Auth token cache — NEVER commit (contains access/refresh tokens)
+.msal-cache.json
+*.msal-cache.json
+
+# Lockfile (optional; not needed for this simple installer)
+package-lock.json
+
+# Logs & OS/editor cruft
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local build scratch (used only when generating docs, etc.)
+docbuild/
