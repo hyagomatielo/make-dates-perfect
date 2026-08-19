@@ -85,6 +85,12 @@
   .ent-badge.ent-contact     { background: #e7f0ff; color: #2f6bd6; }
   .ent-badge.ent-account     { background: #ffe8f1; color: #cf4a86; }
 
+  /* Step 2 "what will change" recap */
+  .change-summary-wrap { margin-top: 16px; }
+  .cs-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+  .cs-row:last-child { border-bottom: none; }
+  .cs-row .ent-badge { flex: none; }
+
   /* Prominent table picker (pastel segmented pills) */
   .table-picker { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
     background: #fbfbff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
@@ -329,6 +335,12 @@
     <div class="note info"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Info/SVG/ic_fluent_info_24_regular.svg" /> Spacing is preserved: every date moves by the same whole-day offset, so the story between
       touchpoints stays identical — it just slides forward to be current.</div>
 
+    <div class="change-summary-wrap">
+      <h3 style="margin:8px 0 4px; font-size:13.5px;">What will change for your selection</h3>
+      <div id="changeSummary"></div>
+      <div class="note warn" style="margin-top:10px;"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Warning/SVG/ic_fluent_warning_24_regular.svg" /> <span><b>Created On</b> and <b>Modified On</b> are never changed — Dataverse locks these system fields on existing records, so they can't be shifted for any table (Cases included). Timelines follow the shifted business dates.</span></div>
+    </div>
+
     <div class="actions">
       <button class="btn-muted" id="backTo1"><img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Arrow%20Left/SVG/ic_fluent_arrow_left_24_regular.svg" />Back</button>
       <button class="btn-primary" id="toStep3">Preview <img class="ficon" alt="" src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-system-icons@main/assets/Eye/SVG/ic_fluent_eye_24_regular.svg" style="margin:0 0 0 6px;" /></button>
@@ -414,10 +426,11 @@ const ACTIVITY_FIELDS = {
 // business-date fields differ.
 const TABLES = {
   opportunity: { label: "Opportunity", idField: "opportunityid", nameField: "name",
-    ownFields: [{ name: "estimatedclosedate", dateOnly: true }, { name: "actualclosedate", dateOnly: true }] },
+    ownFields: [{ name: "estimatedclosedate", dateOnly: true, label: "Est. Close Date" },
+                { name: "actualclosedate", dateOnly: true, label: "Actual Close Date" }] },
   lead:        { label: "Lead", idField: "leadid", nameField: "subject", ownFields: [] },
   incident:    { label: "Case", idField: "incidentid", nameField: "title",
-    ownFields: [{ name: "followupby", dateOnly: false }] },
+    ownFields: [{ name: "followupby", dateOnly: false, label: "Follow Up By" }] },
   contact:     { label: "Contact", idField: "contactid", nameField: "fullname", ownFields: [] },
   account:     { label: "Account", idField: "accountid", nameField: "name", ownFields: [] },
 };
@@ -572,6 +585,34 @@ function readConfig() {
     shiftClose: $("shiftClose").checked,
     padDays: Math.max(0, parseInt($("padDays").value, 10) || 0),
   };
+}
+
+// Step 2 recap: per selected table, which own fields shift + the created-on caveat.
+function renderConfigSummary() {
+  const entities = Array.from(new Set(Object.values(state.selected).map((s) => s.entity)));
+  const shiftOwn = $("shiftClose").checked;
+  const typeLabels = { email: "Emails", phonecall: "Phone Calls", appointment: "Appointments", task: "Tasks" };
+  const types = Array.from(document.querySelectorAll(".actType:checked")).map((c) => typeLabels[c.value]);
+
+  let rows = entities.map((ent) => {
+    const t = TABLES[ent];
+    let ownTxt;
+    if (!t.ownFields.length) {
+      ownTxt = '<span style="color:var(--muted)">no own date fields — touchpoints only</span>';
+    } else if (!shiftOwn) {
+      ownTxt = '<span style="color:var(--muted)">own dates off (' + t.ownFields.map((f) => f.label).join(", ") + ')</span>';
+    } else {
+      ownTxt = 'own dates shifted: <b>' + t.ownFields.map((f) => f.label).join(", ") + '</b>';
+    }
+    return '<div class="cs-row"><span class="ent-badge ent-' + ent + '">' + escapeHtml(t.label) + '</span><span>' + ownTxt + '</span></div>';
+  }).join("");
+  if (!rows) rows = '<div style="color:var(--muted); font-size:13px;">No records selected.</div>';
+
+  const actLine = '<div class="cs-row"><span class="ent-badge" style="background:#eef0f6;color:var(--muted)">Touchpoints</span><span>' +
+    (types.length ? types.join(", ") + ' (for every selected record)' : '<span style="color:var(--danger)">none selected</span>') +
+    '</span></div>';
+
+  $("changeSummary").innerHTML = rows + actLine;
 }
 
 async function buildPlan() {
@@ -825,9 +866,11 @@ function init() {
     });
   });
 
-  $("toStep2").addEventListener("click", () => setStep(2));
+  $("toStep2").addEventListener("click", () => { renderConfigSummary(); setStep(2); });
   $("backTo1").addEventListener("click", () => setStep(1));
   $("backTo2").addEventListener("click", () => setStep(2));
+  $("shiftClose").addEventListener("change", renderConfigSummary);
+  document.querySelectorAll(".actType").forEach((c) => c.addEventListener("change", renderConfigSummary));
 
   $("toStep3").addEventListener("click", async () => {
     setStep(3);
