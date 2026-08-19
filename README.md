@@ -59,7 +59,7 @@ dates comfortably in the future, fixing the "too close" problem while the story 
 
 ## Prerequisites
 
-- **Node.js 18+** (for the installer) — check with `node --version`.
+- **Node.js 18+** — only for **Option B** (the installer script); not needed if you import the solution.
 - A **Dynamics 365 / Dataverse environment** you may customize (create solutions, edit records).
 - An account with the **System Customizer** (or System Administrator) role in that environment.
 
@@ -69,8 +69,23 @@ dates comfortably in the future, fixing the "too close" problem while the story 
 
 ## Install
 
-Installs a solution named **`MakeDatesPerfect`** containing a model-driven app, its site map,
-and the wizard web resource. It uses **MSAL device-code sign-in** (no stored passwords).
+Both options install a solution named **`MakeDatesPerfect`** containing a model-driven app,
+its site map, and the wizard web resource + icon. Pick whichever you prefer.
+
+### Option A — Import the solution package (no Node.js)
+
+Prebuilt solution zips are in [`/solution`](solution):
+
+1. Go to [make.powerapps.com](https://make.powerapps.com) and select your environment.
+2. **Solutions → Import solution → Browse**, and choose:
+   - [`solution/MakeDatesPerfect_managed.zip`](solution/MakeDatesPerfect_managed.zip) — recommended for consumers, or
+   - [`solution/MakeDatesPerfect_unmanaged.zip`](solution/MakeDatesPerfect_unmanaged.zip) — if you want to customize it.
+3. **Next → Import**, then **Publish all customizations** when it finishes.
+4. Open the **Make Dates Perfect** app from the **Apps** launcher.
+
+### Option B — Run the installer script
+
+Uses **MSAL device-code sign-in** (no stored passwords).
 
 ```bash
 # 1. Clone
@@ -99,6 +114,9 @@ https://yourorg.crm.dynamics.com/main.aspx?appid=<appid>
 ```
 
 The app also appears in the **Apps** launcher as **"Make Dates Perfect."**
+
+> **Maintainers:** to refresh the packaged zips from an environment, run
+> `node export-solution.js https://yourorg.crm.dynamics.com` (writes to `/solution`).
 
 ---
 

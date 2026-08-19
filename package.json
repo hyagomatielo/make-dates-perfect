@@ -1,6 +1,6 @@
 {
   "name": "make-dates-perfect",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Make Dates Perfect — a demo-prep wizard for Microsoft Dynamics 365 / Dataverse that shifts opportunity, lead, case, contact and account dates (and their related touchpoints) forward while preserving spacing. Update-only and fully reversible. For demo environments only.",
   "main": "deploy.js",
   "scripts": {
