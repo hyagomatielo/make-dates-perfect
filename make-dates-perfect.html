@@ -311,7 +311,7 @@
 
     <h3 style="margin:8px 0 4px; font-size:13.5px;">Touchpoint tables</h3>
     <div class="opt-grid">
-      <label class="opt"><input type="checkbox" class="actType" value="email" checked /> <span>Emails<small>actualstart · actualend</small></span></label>
+      <label class="opt"><input type="checkbox" class="actType" value="email" checked /> <span>Emails<small>scheduled · actual</small></span></label>
       <label class="opt"><input type="checkbox" class="actType" value="phonecall" checked /> <span>Phone Calls<small>scheduled · actual</small></span></label>
       <label class="opt"><input type="checkbox" class="actType" value="appointment" checked /> <span>Appointments<small>scheduled · actual</small></span></label>
       <label class="opt"><input type="checkbox" class="actType" value="task" checked /> <span>Tasks<small>scheduled · actual</small></span></label>
@@ -415,7 +415,7 @@ const state = {
 
 // ── Field definitions ────────────────────────────────────────
 const ACTIVITY_FIELDS = {
-  email:       ["actualstart", "actualend"],
+  email:       ["scheduledstart", "scheduledend", "actualstart", "actualend"],
   phonecall:   ["scheduledstart", "scheduledend", "actualstart", "actualend"],
   appointment: ["scheduledstart", "scheduledend", "actualstart", "actualend"],
   task:        ["scheduledstart", "scheduledend", "actualstart", "actualend"],

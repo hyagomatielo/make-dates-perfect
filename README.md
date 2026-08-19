@@ -150,7 +150,7 @@ Plus, for **any** selected record, the related **activities** you enabled:
 
 | Activity | Fields shifted |
 |---|---|
-| Email | `actualstart`, `actualend` |
+| Email | `scheduledstart`, `scheduledend`, `actualstart`, `actualend` |
 | Phone Call | `scheduledstart`, `scheduledend`, `actualstart`, `actualend` |
 | Appointment | `scheduledstart`, `scheduledend`, `actualstart`, `actualend` |
 | Task | `scheduledstart`, `scheduledend`, `actualstart`, `actualend` |
