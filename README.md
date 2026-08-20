@@ -1,7 +1,7 @@
 # 🗓️ Make Dates Perfect
 
 **A demo-prep wizard for Microsoft Dynamics 365 / Dataverse.** It slides the dates on your
-records — opportunities, leads, cases, contacts, accounts — and their related touchpoints
+records — opportunities, leads, cases — and their related touchpoints
 (emails, phone calls, appointments, tasks) **forward in time**, so aging demo data looks
 fresh and current again **without changing the story**.
 
@@ -45,7 +45,7 @@ dates comfortably in the future, fixing the "too close" problem while the story 
 
 ## Features
 
-- **Multi-table** — Opportunities, Leads, Cases, Contacts, Accounts (each with its own
+- **Multi-table** — Opportunities, Leads, Cases (each with its own
   pastel pill, icon, and live selected-count).
 - **Per-record selection** — pick exactly what you want; selections accumulate across tables.
 - **Mandatory dry-run preview** — see every record/field, current → new value, and Δ days
@@ -124,8 +124,8 @@ The app also appears in the **Apps** launcher as **"Make Dates Perfect."**
 
 1. **Open** the app (from the Apps launcher or the printed URL). It must run **inside**
    Dynamics 365 so it can authenticate; opening the raw HTML file standalone won't work.
-2. **Step 1 — Select records.** Pick a table pill (Opportunities / Leads / Cases / Contacts /
-   Accounts), search, and tick records. Use **Select all** for the current page. Selections
+2. **Step 1 — Select records.** Pick a table pill (Opportunities / Leads / Cases),
+   search, and tick records. Use **Select all** for the current page. Selections
    add up across tables (the pill badges show how many you've picked in each).
 3. **Step 2 — Configure.** Choose which touchpoint tables to move (Emails, Phone Calls,
    Appointments, Tasks), whether to shift each record's own dates, and how many days before
@@ -144,7 +144,7 @@ The app also appears in the **Apps** launcher as **"Make Dates Perfect."**
 |---|---|
 | Opportunity | `estimatedclosedate`, `actualclosedate` |
 | Case (incident) | `followupby` |
-| Lead / Contact / Account | *(activities only — no own business-date fields)* |
+| Lead | *(activities only — no own business-date fields)* |
 
 Plus, for **any** selected record, the related **activities** you enabled:
 
